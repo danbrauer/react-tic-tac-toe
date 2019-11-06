@@ -2,9 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-// converting the React.Component to be a "function component", which
-// is a simplified component that does not maintain its own state and
-// whose function is just a render function
 const Square = (props) => {
     return (
         <button className="square"
@@ -13,16 +10,6 @@ const Square = (props) => {
         </button>
     );
 };
-// class Square extends React.Component {
-//     render() {
-//         return (
-//             <button className="square"
-//                     onClick={() => this.props.onClick()} >
-//                 {this.props.value}
-//             </button>
-//         );
-//     }
-// }
 
 /*
 from tutorial
@@ -31,15 +18,56 @@ each other, you need to declare the shared state in their parent component inste
 parent component can pass the state back down to the children by using props; this keeps
 the child components in sync with each other and with the parent component.
 */
-
 class Board extends React.Component {
+
+    renderSquare(i) {
+        return (
+            <Square
+                value={this.props.squares[i]}
+                onClick={() => this.props.onClick(i)}
+            />);
+    };
+
+    render() {
+        return (
+            <div>
+                <div className="board-row">
+                    {this.renderSquare(0)}
+                    {this.renderSquare(1)}
+                    {this.renderSquare(2)}
+                </div>
+                <div className="board-row">
+                    {this.renderSquare(3)}
+                    {this.renderSquare(4)}
+                    {this.renderSquare(5)}
+                </div>
+                <div className="board-row">
+                    {this.renderSquare(6)}
+                    {this.renderSquare(7)}
+                    {this.renderSquare(8)}
+                </div>
+            </div>
+        );
+    };
+}
+
+class Game extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            squares: Array(9).fill(null),
             nextIsX: true,
+            stepNumber: 0,
+            history: [{ squares: Array(9).fill(null) }],
         }
     }
+
+    jumpTo = (stepNumber) => {
+        this.setState({
+            ...this.state,
+            stepNumber,
+            nextIsX: ((stepNumber % 2) === 0)
+        })
+    };
 
     // copied from tutorial....
     calculateWinner = (squares) => {
@@ -65,64 +93,49 @@ class Board extends React.Component {
     xOrO = () => this.state.nextIsX ? 'X' : 'O';
 
     handleClick = (i) => {
-        const squares = this.state.squares.slice();
-        if (squares[i]) return; // if already clicked, do nothing
-        if (this.calculateWinner(squares)) return; // if game was won, do nothing
-
+        const history = this.state.history.slice(0,this.state.stepNumber+1);
+        const current = history[history.length - 1];
+        const squares = current.squares.slice();
+        if (squares[i] || this.calculateWinner(squares)) return; // if already clicked or already won, do nothing
         squares[i] = this.xOrO();
         this.setState({
-            squares,
+            history: [ ...history, { squares }],
             nextIsX: !this.state.nextIsX,
+            stepNumber: history.length
         })
     };
 
-    renderSquare(i) {
-        return (
-            <Square
-                value={this.state.squares[i]}
-                onClick={() => this.handleClick(i)}
-            />);
-    };
-
     render() {
-        const winner = this.calculateWinner(this.state.squares);
+        const history = this.state.history;
+        const current = history[this.state.stepNumber];
+        const winner = this.calculateWinner[current.squares];
         const status = winner ?
             `Winner: ${winner}!` :
             `Next player: ${this.xOrO()}`;
 
-        return (
-            <div>
-                <div className="status">{status}</div>
-                <div className="board-row">
-                    {this.renderSquare(0)}
-                    {this.renderSquare(1)}
-                    {this.renderSquare(2)}
-                </div>
-                <div className="board-row">
-                    {this.renderSquare(3)}
-                    {this.renderSquare(4)}
-                    {this.renderSquare(5)}
-                </div>
-                <div className="board-row">
-                    {this.renderSquare(6)}
-                    {this.renderSquare(7)}
-                    {this.renderSquare(8)}
-                </div>
-            </div>
-        );
-    };
-}
+        const moves = history.map( (step, move) => {
+            const desc = move ?
+                `Go to move # ${move}` :
+                "Go to game start";
+            const moveKey = move ? move : 0;
+            return (
+                <li key={moveKey} >
+                    <button onClick={() => this.jumpTo(move)}>{desc}</button>
+                </li>
+            );
+        });
 
-class Game extends React.Component {
-    render() {
         return (
             <div className="game">
                 <div className="game-board">
-                    <Board />
+                    <Board
+                        squares={current.squares}
+                        onClick={(i)=>this.handleClick(i)}
+                    />
                 </div>
                 <div className="game-info">
-                    <div>{/* status */}</div>
-                    <ol>{/* TODO */}</ol>
+                    <div>{status}</div>
+                    <ol>{moves}</ol>
                 </div>
             </div>
         );
