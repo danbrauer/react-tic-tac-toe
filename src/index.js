@@ -37,14 +37,42 @@ class Board extends React.Component {
         super(props);
         this.state = {
             squares: Array(9).fill(null),
+            nextIsX: true,
         }
     }
 
+    // copied from tutorial....
+    calculateWinner = (squares) => {
+        const lines = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6],
+        ];
+        for (let i = 0; i < lines.length; i++) {
+            const [a, b, c] = lines[i];
+            if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+                return squares[a];
+            }
+        }
+        return null;
+    };
+
+    xOrO = () => this.state.nextIsX ? 'X' : 'O';
+
     handleClick = (i) => {
-        const squares =     this.state.squares.slice();
-        squares[i] = 'X';
+        const squares = this.state.squares.slice();
+        if (squares[i]) return; // if already clicked, do nothing
+        if (this.calculateWinner(squares)) return; // if game was won, do nothing
+
+        squares[i] = this.xOrO();
         this.setState({
-            squares
+            squares,
+            nextIsX: !this.state.nextIsX,
         })
     };
 
@@ -54,10 +82,13 @@ class Board extends React.Component {
                 value={this.state.squares[i]}
                 onClick={() => this.handleClick(i)}
             />);
-    }
+    };
 
     render() {
-        const status = 'Next player: X';
+        const winner = this.calculateWinner(this.state.squares);
+        const status = winner ?
+            `Winner: ${winner}!` :
+            `Next player: ${this.xOrO()}`;
 
         return (
             <div>
@@ -79,7 +110,7 @@ class Board extends React.Component {
                 </div>
             </div>
         );
-    }
+    };
 }
 
 class Game extends React.Component {
