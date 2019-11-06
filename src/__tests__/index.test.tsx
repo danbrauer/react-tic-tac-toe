@@ -2,7 +2,7 @@ import * as React from 'react';
 import { shallow } from 'enzyme';
 import {
     Square
-} from '../index';
+} from '../game';
 
 
 describe('square component', () => {
@@ -12,9 +12,11 @@ describe('square component', () => {
         const mockOnClick = jest.fn( (i: number) => {} );
 
         const component = shallow(
-            <Square value={'X'} onClick={mockOnClick} />
+            <Square value='X' onClick={mockOnClick} />
         );
 
-        expect(component.prop('value')).toEqual('O');
+        component.simulate('click');
+        expect(component.getElement().props.children[0]).toEqual('X');
+        expect(mockOnClick).toHaveBeenCalledTimes(1);
     });
 });

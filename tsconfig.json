@@ -22,7 +22,6 @@
       "./src/typings", "./node_modules/@types"]
   },
   "include": [
-    "src/**/*",
-    "__test__/**/*"
+    "src/**/*"
   ]
 }
