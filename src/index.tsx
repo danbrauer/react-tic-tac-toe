@@ -2,25 +2,41 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-const Square = (props) => {
+type SquareVal = 'X' | 'O' | null;
+interface SquaresArray {
+    squares: SquareVal[]
+}
+
+interface GameState {
+    nextIsX: boolean,
+    stepNumber: number,
+    history: SquaresArray[]
+}
+
+interface BoardProps {
+    squares: SquareVal[],
+    onClick: (i: number) => void
+}
+
+interface SquareProps {
+    value: SquareVal,
+    onClick: (i: number) => void
+}
+
+const Square = (props: SquareProps) => {
     return (
         <button className="square"
+                // @ts-ignore // not sure how to type this correctly......
                 onClick={props.onClick} >
             {props.value}
         </button>
     );
 };
 
-/*
-from tutorial
-To collect data from multiple children, or to have two child components communicate with
-each other, you need to declare the shared state in their parent component instead. The
-parent component can pass the state back down to the children by using props; this keeps
-the child components in sync with each other and with the parent component.
-*/
-class Board extends React.Component {
 
-    renderSquare(i) {
+class Board extends React.Component<BoardProps> {
+
+    renderSquare(i: number) {
         return (
             <Square
                 value={this.props.squares[i]}
@@ -51,8 +67,11 @@ class Board extends React.Component {
     };
 }
 
-class Game extends React.Component {
-    constructor(props) {
+
+// marking the props type as 'any' because I don't know what it's supposed
+// to be and we don't actually use it for anything so don't care
+class Game extends React.Component<any,GameState> {
+    constructor(props: any) {
         super(props);
         this.state = {
             nextIsX: true,
@@ -61,7 +80,7 @@ class Game extends React.Component {
         }
     }
 
-    jumpTo = (stepNumber) => {
+    jumpTo = (stepNumber: number) => {
         this.setState({
             ...this.state,
             stepNumber,
@@ -70,7 +89,7 @@ class Game extends React.Component {
     };
 
     // copied from tutorial....
-    calculateWinner = (squares) => {
+    calculateWinner = (squares: SquareVal[]) => {
         const lines = [
             [0, 1, 2],
             [3, 4, 5],
@@ -90,9 +109,9 @@ class Game extends React.Component {
         return null;
     };
 
-    xOrO = () => this.state.nextIsX ? 'X' : 'O';
+    xOrO = (): SquareVal => this.state.nextIsX ? 'X' : 'O';
 
-    handleClick = (i) => {
+    handleClick = (i: number) => {
         const history = this.state.history.slice(0,this.state.stepNumber+1);
         const current = history[history.length - 1];
         const squares = current.squares.slice();
@@ -108,7 +127,7 @@ class Game extends React.Component {
     render() {
         const history = this.state.history;
         const current = history[this.state.stepNumber];
-        const winner = this.calculateWinner[current.squares];
+        const winner = this.calculateWinner(current.squares);
         const status = winner ?
             `Winner: ${winner}!` :
             `Next player: ${this.xOrO()}`;
@@ -130,7 +149,7 @@ class Game extends React.Component {
                 <div className="game-board">
                     <Board
                         squares={current.squares}
-                        onClick={(i)=>this.handleClick(i)}
+                        onClick={(i: number)=>this.handleClick(i)}
                     />
                 </div>
                 <div className="game-info">
