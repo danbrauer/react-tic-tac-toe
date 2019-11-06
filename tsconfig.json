@@ -19,7 +19,7 @@
     "noEmit": true,
     "jsx": "react",
     "typeRoots" : [
-      "./src/typings", "../node_modules/@types"]
+      "./src/typings", "./node_modules/@types"]
   },
   "include": [
     "src/**/*",

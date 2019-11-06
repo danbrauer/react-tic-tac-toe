@@ -167,3 +167,7 @@ ReactDOM.render(
     <Game />,
     document.getElementById('root')
 );
+
+export {
+    Square
+}
